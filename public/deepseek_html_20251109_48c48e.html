@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie to Token Converter</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1877f2;
+            --primary-dark: #166fe5;
+            --secondary: #42b72a;
+            --secondary-dark: #36a420;
+            --dark: #1c1e21;
+            --light: #f0f2f5;
+            --gray: #8a8d91;
+            --error: #ff4444;
+            --success: #42b72a;
+            --warning: #ff9500;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f0f2f5 0%, #e4e6eb 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+        }
+        
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            position: relative;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--dark);
+        }
+        
+        textarea, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #dddfe2;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: white;
+        }
+        
+        textarea {
+            min-height: 140px;
+            resize: vertical;
+            font-family: monospace;
+            line-height: 1.5;
+        }
+        
+        textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.2);
+        }
+        
+        .btn {
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(24, 119, 242, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result-container {
+            margin-top: 24px;
+            display: none;
+        }
+        
+        .result-box {
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.5;
+            font-size: 15px;
+        }
+        
+        .success {
+            background: rgba(66, 183, 42, 0.1);
+            border: 2px solid var(--success);
+            color: var(--success);
+        }
+        
+        .error {
+            background: rgba(255, 68, 68, 0.1);
+            border: 2px solid var(--error);
+            color: var(--error);
+        }
+        
+        .warning {
+            background: rgba(255, 149, 0, 0.1);
+            border: 2px solid var(--warning);
+            color: var(--warning);
+        }
+        
+        .info-box {
+            background: rgba(24, 119, 242, 0.1);
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .info-title {
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-title i {
+            font-size: 20px;
+        }
+        
+        .token-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px;
+            margin-top: 14px;
+        }
+        
+        .token-type {
+            padding: 12px 15px;
+            background: #f5f6f7;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .token-type:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .token-type-code {
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: var(--gray);
+            font-size: 14px;
+            border-top: 1px solid #dddfe2;
+            background: #f8f9fa;
+        }
+        
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 25px 0;
+        }
+        
+        .loader-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .instructions h3 {
+            color: var(--secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions ol {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .api-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(24, 119, 242, 0.05);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .api-info i {
+            color: var(--primary);
+            font-size: 18px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 0;
+            }
+            
+            body {
+                padding: 0;
+            }
+            
+            .token-types {
+                grid-template-columns: 1fr;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            header {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-cookie-bite"></i> Cookie to Token Converter</h1>
+            <div class="subtitle">Convert Facebook cookies to access tokens using our API</div>
+        </header>
+        
+        <div class="content">
+            <div class="instructions">
+                <h3><i class="fas fa-info-circle"></i> How to use this converter</h3>
+                <ol>
+                    <li>Open Facebook in your browser and log in to your account</li>
+                    <li>Open Developer Tools (F12) and go to the Application/Storage tab</li>
+                    <li>Find the cookies for facebook.com and copy the entire cookie string</li>
+                    <li>Paste the cookie in the field below and select your desired token type</li>
+                    <li>Click "Convert Cookie to Token" to generate your access token</li>
+                </ol>
+            </div>
+            
+            <div class="info-box">
+                <div class="info-title"><i class="fas fa-shield-alt"></i> Security Notice</div>
+                <p>This tool processes your cookies through our secure server and only sends the necessary authentication data to the external API. We do not store or log any of your personal information.</p>
+            </div>
+            
+            <form id="converter-form">
+                <div class="form-group">
+                    <label for="cookie-input"><i class="fas fa-cookie"></i> Facebook Cookie:</label>
+                    <textarea id="cookie-input" placeholder="Paste your full Facebook cookie string here (e.g., sb=ABC123...; c_user=12345...; xs=XYZ789...)"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="token-type"><i class="fas fa-key"></i> Token Type:</label>
+                    <select id="token-type">
+                        <option value="EAAAAU">Facebook Android (EAAAAU)</option>
+                        <option value="EAAD">Messenger For Android (EAAD)</option>
+                        <option value="EAAAAAY">Facebook Iphone (EAAAAAY)</option>
+                        <option value="EAADY">Messenger For Iphone (EAADY)</option>
+                        <option value="EAAB">Page Android (EAAB)</option>
+                        <option value="EAAG">Business Manager (EAAG)</option>
+                        <option value="EAAC4">Messenger For Iphone Dev (EAAC4)</option>
+                        <option value="EAAC2">Messenger For Lite (EAAC2)</option>
+                        <option value="EAACW">Page IOS (EAACW)</option>
+                        <option value="EAACn">Messenger IOS House (EAACn)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn" id="convert-btn">
+                        <i class="fas fa-exchange-alt"></i> Convert Cookie to Token
+                    </button>
+                </div>
+            </form>
+            
+            <div class="loader" id="loader">
+                <div class="loader-spinner"></div>
+                <p>Converting cookie to token...</p>
+            </div>
+            
+            <div class="result-container" id="result-container">
+                <label><i class="fas fa-code"></i> Result:</label>
+                <div class="result-box" id="result-box"></div>
+            </div>
+            
+            <div class="info-box">
+                <div class="info-title"><i class="fas fa-list"></i> Available Token Types</div>
+                <div class="token-types">
+                    <div class="token-type"><span class="token-type-code">EAAAAU</span> - Facebook Android</div>
+                    <div class="token-type"><span class="token-type-code">EAAD</span> - Messenger For Android</div>
+                    <div class="token-type"><span class="token-type-code">EAAAAAY</span> - Facebook Iphone</div>
+                    <div class="token-type"><span class="token-type-code">EAADY</span> - Messenger For Iphone</div>
+                    <div class="token-type"><span class="token-type-code">EAAB</span> - Page Android</div>
+                    <div class="token-type"><span class="token-type-code">EAAG</span> - Business Manager</div>
+                    <div class="token-type"><span class="token-type-code">EAAC4</span> - Messenger For Iphone Dev</div>
+                    <div class="token-type"><span class="token-type-code">EAAC2</span> - Messenger For Lite</div>
+                    <div class="token-type"><span class="token-type-code">EAACW</span> - Page IOS</div>
+                    <div class="token-type"><span class="token-type-code">EAACn</span> - Messenger IOS House</div>
+                </div>
+                <p style="margin-top: 15px; font-size: 14px; color: var(--gray);">
+                    <i class="fas fa-exclamation-triangle"></i> Note: Some tokens might not be retrievable for certain accounts
+                </p>
+                
+                <div class="api-info">
+                    <i class="fas fa-server"></i>
+                    <span>Backend API: <code>/api/convert</code> | External API: <code>https://c2t.lara.rest/</code></span>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Cookie to Token Converter &copy; 2023 | Deployed on Render Web Service</p>
+        </footer>
+    </div>
+
+    <script>
+        document.getElementById('converter-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const cookie = document.getElementById('cookie-input').value.trim();
+            const tokenType = document.getElementById('token-type').value;
+            const convertBtn = document.getElementById('convert-btn');
+            const loader = document.getElementById('loader');
+            const resultContainer = document.getElementById('result-container');
+            const resultBox = document.getElementById('result-box');
+            
+            if (!cookie) {
+                alert('Please enter a cookie');
+                return;
+            }
+            
+            // Show loader, disable button
+            convertBtn.disabled = true;
+            loader.style.display = 'block';
+            resultContainer.style.display = 'none';
+            
+            try {
+                // Call our backend API
+                const response = await fetch('/api/convert', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        cookie: cookie,
+                        tokenType: tokenType
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Hide loader, enable button
+                convertBtn.disabled = false;
+                loader.style.display = 'none';
+                
+                // Display result
+                resultContainer.style.display = 'block';
+                
+                if (data.success && data.token) {
+                    resultBox.className = 'result-box success';
+                    resultBox.textContent = `Token Type: ${data.tokenType || tokenType}\nAccess Token: ${data.token}`;
+                } else {
+                    resultBox.className = 'result-box error';
+                    resultBox.textContent = data.error || 'Token generation failed. The cookie might be invalid or expired.';
+                }
+            } catch (error) {
+                // Hide loader, enable button
+                convertBtn.disabled = false;
+                loader.style.display = 'none';
+                
+                // Display error
+                resultContainer.style.display = 'block';
+                resultBox.className = 'result-box error';
+                resultBox.textContent = 'Error: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html>
